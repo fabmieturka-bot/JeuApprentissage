@@ -1,369 +1,112 @@
-# JeuApprentissage
 <!doctype html>
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Jeu CAP — Bonnes pratiques & règles de conduite</title>
+  <title>Jeu simple — Saisie pseudo</title>
   <style>
-    :root{--bg:#f6f7fb;--card:#fff;--accent:#2b6cb0;--muted:#6b7280;--ok:#16a34a;--bad:#dc2626}
-    *{box-sizing:border-box}
-    body{font-family:Inter,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial; margin:0; background:linear-gradient(180deg,var(--bg),#eef2ff); color:#0f172a}
-    .wrap{max-width:980px;margin:28px auto;padding:20px}
-    header{display:flex;gap:16px;align-items:center}
-    header h1{font-size:20px;margin:0}
-    header p{margin:0;color:var(--muted)}
-
-    .controls{display:flex;gap:8px;margin-top:18px}
-    button{background:var(--accent);color:white;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
-    button.secondary{background:#edf2ff;color:var(--accent);border:1px solid rgba(43,108,176,.12)}
-    .game{display:grid;grid-template-columns:1fr 320px;gap:18px;margin-top:20px}
-    @media(max-width:880px){.game{grid-template-columns:1fr}}
-
-    .card{background:var(--card);border-radius:12px;padding:16px;box-shadow:0 6px 18px rgba(14,30,37,.06)}
-    .question{font-weight:600;margin-bottom:8px}
-    .scenario{color:var(--muted);margin-bottom:12px}
-
-    .options{display:flex;flex-direction:column;gap:8px}
-    .option{padding:10px;border-radius:10px;border:1px solid #e6eefc;cursor:pointer;background:#fff}
-    .option:hover{transform:translateY(-2px)}
-    .option.correct{border-color:rgba(22,163,74,.16);box-shadow:0 6px 12px rgba(16,185,129,.06)}
-    .option.wrong{border-color:rgba(220,38,38,.12);opacity:.95}
-
-    .sidebar h3{margin-top:0}
-    .progress{height:12px;background:#eef2ff;border-radius:999px;overflow:hidden}
-    .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#7c3aed);width:0%}
-
-    .result{font-size:18px;font-weight:700}
-    .explanation{margin-top:10px;color:var(--muted)}
-
-    .footer{margin-top:18px;display:flex;gap:10px;align-items:center}
-    .small{font-size:13px;color:var(--muted)}
-
-    .badge{display:inline-block;padding:6px 10px;border-radius:999px;background:#fff;color:var(--accent);border:1px solid rgba(43,108,176,.12);font-weight:600}
-    input[type=text]{padding:8px;border-radius:8px;border:1px solid #e6eefc;width:100%}
-
-    .rev-list{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-    @media(max-width:600px){.rev-list{grid-template-columns:1fr}}
-    .rule{padding:10px;border-radius:8px;border:1px dashed #e6eefc;background:#fff}
-
-    .certificate{padding:12px;border-radius:10px;border:1px solid rgba(0,0,0,.06);background:linear-gradient(180deg,#fff,#f8fafc);text-align:center}
+    body{font-family:Arial,Helvetica,sans-serif;background:#f3f4f6;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
+    .box{background:#fff;padding:20px;border-radius:12px;box-shadow:0 8px 24px rgba(15,23,42,.08);width:320px;text-align:center}
+    input[type=text]{width:100%;padding:8px;border-radius:8px;border:1px solid #e6eefc;margin-top:8px}
+    button{margin-top:12px;padding:10px 14px;border-radius:8px;border:none;background:#2563eb;color:#fff;cursor:pointer}
+    .small{font-size:13px;color:#6b7280;margin-top:8px}
+    #gameArea{margin-top:12px}
+    #counter{font-size:40px;font-weight:800}
     .hidden{display:none}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <div>
-        <h1>Jeu CAP — Bonnes pratiques et règles de conduite</h1>
-        <p>Apprenez les règles de bonne conduite en entreprise (ponctualité, sécurité, respect, hygiène...). Mode quiz interactif + fiches de révision.</p>
-      </div>
-    </header>
-
-    <div class="controls">
-      <button id="startBtn">Démarrer le quiz</button>
-      <button class="secondary" id="revisionBtn">Mode révision</button>
-      <button class="secondary" id="resetBtn">Réinitialiser score</button>
+  <div class="box">
+    <h2>Jeu simple</h2>
+    <div id="startArea">
+      <label for="pseudo">Entrez votre pseudo :</label>
+      <input id="pseudo" type="text" placeholder="Votre pseudo" />
+      <div class="small">But : cliquer le plus de fois possible en 5 secondes</div>
+      <button id="startBtn">Démarrer</button>
     </div>
 
-    <div class="game">
-      <main class="card">
-        <div id="gameArea">
-          <div id="welcome">
-            <h2>Prêt·e ?</h2>
-            <p class="small">Cliquez sur <strong>Démarrer le quiz</strong> pour lancer 10 scénarios. Pour chaque question, choisissez la réponse la plus adaptée. Vous aurez un score et des explications.</p>
-            <div style="margin-top:12px">
-              <label for="playerName" class="small">Votre prénom (optionnel pour le certificat)</label>
-              <input id="playerName" type="text" placeholder="Entrez votre prénom" />
-            </div>
-          </div>
-
-          <div id="questionBlock" class="hidden">
-            <div class="question" id="qTitle">Question</div>
-            <div class="scenario" id="qScenario">Scénario</div>
-            <div class="options" id="options"></div>
-
-            <div class="footer">
-              <div class="small">Question <span id="current"></span> / <span id="total"></span></div>
-              <div style="margin-left:auto"><button id="nextBtn" class="secondary">Suivant</button></div>
-            </div>
-
-            <div id="explain" class="explanation hidden"></div>
-          </div>
-
-          <div id="endBlock" class="hidden">
-            <div class="result" id="finalScore"></div>
-            <p class="small" id="finalMsg"></p>
-            <div style="margin-top:12px;display:flex;gap:8px">
-              <button id="retryBtn">Recommencer</button>
-              <button class="secondary" id="printCertBtn">Générer certificat</button>
-            </div>
-            <div id="certificateBlock" class="hidden" style="margin-top:14px">
-              <div class="certificate" id="certificate">
-                <div style="font-size:14px;color:var(--muted)">Certificat de réussite</div>
-                <div style="font-size:22px;font-weight:800;margin-top:8px" id="certName">—</div>
-                <div style="margin-top:6px">A obtenu un score de <span id="certScore"></span>/10</div>
-                <div class="small" style="margin-top:8px;color:var(--muted)">Jeu CAP — Bonnes pratiques — Généré le <span id="certDate"></span></div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <div style="margin-top:14px" class="small">Conseil: utilisez le mode révision avant de commencer si vous voulez revoir les règles.</div>
-      </main>
-
-      <aside class="sidebar card">
-        <h3>Progrès</h3>
-        <div class="progress" aria-hidden><i id="progBar"></i></div>
-        <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
-          <div class="badge" id="badge">Débutant</div>
-          <div class="small" style="margin-left:auto">Meilleur: <span id="bestScore">0</span>/10</div>
-        </div>
-
-        <hr style="margin:14px 0;border:none;border-top:1px solid #f1f5f9">
-        <h3>Règles rapides</h3>
-        <div class="rev-list">
-          <div class="rule"><strong>Ponctualité</strong><div class="small">Arriver à l'heure montre du professionnalisme.</div></div>
-          <div class="rule"><strong>Sécurité</strong><div class="small">Port des EPI, signaler un risque, respecter consignes.</div></div>
-          <div class="rule"><strong>Hygiène</strong><div class="small">Matériel propre, gestes barrières si nécessaire.</div></div>
-          <div class="rule"><strong>Respect</strong><div class="small">Langage professionnel, confidentialité, respect des collègues.</div></div>
-        </div>
-
-        <hr style="margin:14px 0;border:none;border-top:1px solid #f1f5f9">
-        <h3>À propos</h3>
-        <div class="small">Ce jeu a été conçu pour préparer les élèves CAP aux attentes du milieu professionnel. Vous pouvez personnaliser les scénarios pour votre spécialité (coiffure, boucherie, boulangerie, etc.).</div>
-      </aside>
+    <div id="gameArea" class="hidden">
+      <div class="small">Joueur : <span id="playerName">—</span></div>
+      <div id="counter">0</div>
+      <button id="clickBtn">CLIQUEZ !</button>
+      <div class="small">Temps restant : <span id="timeLeft">5</span>s</div>
     </div>
 
-    <section id="revisionSection" class="card hidden" style="margin-top:18px">
-      <h3>Mode révision — Fiches rapides</h3>
-      <div class="rev-list">
-        <div class="rule"><strong>Arrivée & ponctualité</strong><div class="small">Prévenir en cas de retard, respecter les horaires, préparation avant service.</div></div>
-        <div class="rule"><strong>Équipements & tenues</strong><div class="small">Port de la tenue professionnelle et EPI requis, changer si sale.</div></div>
-        <div class="rule"><strong>Communication</strong><div class="small">Savoir prendre la parole poliment, écouter, transmettre consignes.</div></div>
-        <div class="rule"><strong>Sécurité au poste</strong><div class="small">Ne pas improviser, suivre procédures, connaître extincteurs et issues.</div></div>
-      </div>
-      <div style="margin-top:12px" class="small">Astuce: imprimez ces fiches pour un support papier.</div>
-    </section>
-
+    <div id="endArea" class="hidden">
+      <div class="small">Résultat pour <strong id="resName">—</strong></div>
+      <div style="font-size:28px;font-weight:700" id="resScore">0</div>
+      <div class="small">Meilleur score (pour ce pseudo) : <span id="best">0</span></div>
+      <button id="playAgain">Rejouer</button>
+    </div>
   </div>
 
   <script>
-    // Questions: scenarios targeted to CAP students. You can adapt the text to a specific specialty.
-    const QUESTIONS = [
-      {
-        q: "Un client arrive tôt et vous demande s'il peut être servi tout de suite alors que vous n'êtes pas préparé. Que faites-vous ?",
-        opts: ["Lui dire d'attendre sans autre forme de politesse.", "S'excuser, expliquer le temps de préparation et lui proposer une solution (attente assise, prise de RDV).", "Refuser catégoriquement et partir."] ,
-        a: 1,
-        exp: "La réponse adéquate est d'expliquer calmement et de proposer une solution. Le respect et la communication sont essentiels."
-      },
-      {
-        q: "Vous remarquez qu'un produit sur l'étagère est endommagé. Que faites-vous ?",
-        opts: ["Le laisser et ignorer.", "Signaler immédiatement au responsable et retirer le produit si nécessaire.", "Prendre le produit pour vous."],
-        a: 1,
-        exp: "Signaler un danger/produit non conforme évite des incidents et protège la clientèle."
-      },
-      {
-        q: "Vous êtes en retard de 20 minutes mais n'êtes pas blessé. Vous arrivez essoufflé. Que faites-vous ?",
-        opts: ["Entrer sans rien dire et commencer à travailler.", "S'excuser auprès du responsable, expliquer brièvement et se mettre au travail.", "Partir sans prévenir."],
-        a: 1,
-        exp: "S'excuser et informer son responsable est une marque de professionnalisme. Les retards doivent être limités."
-      },
-      {
-        q: "Un collègue vous confie une information personnelle sur un client. Que faites-vous ?",
-        opts: ["Partager l'information avec d'autres collègues pour plaisanter.", "Garder la confidentialité et n'utiliser l'information que si c'est nécessaire pour le service.", "Publier l'information sur les réseaux sociaux."],
-        a: 1,
-        exp: "Respecter la confidentialité est indispensable — ne pas divulguer d'informations personnelles."
-      },
-      {
-        q: "Avant d'utiliser une machine, vous constatez une odeur de brûlé. Comment réagissez-vous ?",
-        opts: ["Continuer et vérifier plus tard.", "Couper la machine, prévenir et faire vérifier par un responsable.", "Ignorer et espérer que ça passe."],
-        a: 1,
-        exp: "Tout signe anormal doit être signalé — sécurité avant tout."
-      },
-      {
-        q: "Un client se plaint d'un produit/service et s'énerve. Que faites-vous ?",
-        opts: ["Entrer en conflit.", "Rester calme, écouter, proposer une solution et prévenir le responsable si nécessaire.", "Ignorer la plainte."],
-        a: 1,
-        exp: "Gérer les conflits calmement et proposer des solutions permet de récupérer la relation client."
-      },
-      {
-        q: "On vous demande de réaliser une tâche pour laquelle vous n'êtes pas formé. Vous faites malgré tout pour aller vite. Que se passe-t-il ?",
-        opts: ["Vous le faites quand même; pas le temps d'attendre.", "Vous dites que vous n'êtes pas formé, demandez une supervision ou une formation.", "Vous refusez sans explication."],
-        a: 1,
-        exp: "Ne pas pratiquer sans formation protège la sécurité et la qualité: demandez assistance."
-      },
-      {
-        q: "Vous trouvez un portefeuille perdu sur le lieu de travail. Que faites-vous ?",
-        opts: ["Le garder pour vous.", "Le déposer au responsable ou au service client pour retrouver le propriétaire.", "L'ouvrir pour chercher de l'argent."],
-        a: 1,
-        exp: "Restituer les objets perdus via les canaux officiels est la procédure correcte."
-      },
-      {
-        q: "Pendant votre service, vous avez un petit bobo sur la main mais le travail est pressant. Que faites-vous ?",
-        opts: ["Ignorer la blessure et continuer.", "Arrêter et signaler la blessure pour recevoir les premiers soins et suivre les règles d'hygiène.", "Continuer en cachant la blessure."],
-        a: 1,
-        exp: "Signaler et soigner une blessure protège vos collègues et les clients (hygiène)."
-      },
-      {
-        q: "Un supérieur vous demande de modifier une information pour un client afin d'éviter un contrôle. Que faites-vous ?",
-        opts: ["Accepter; obéir au supérieur.", "Refuser poliment et expliquer que falsifier est interdit; alerter un responsable si besoin.", "Faire comme demandé en secret."],
-        a: 1,
-        exp: "La conduite éthique prime: refuser de falsifier et informer les responsables appropriés."
-      }
-    ];
-
-    // State
-    let index = 0, score = 0, answered = false;
-    const total = QUESTIONS.length;
-
-    // Elements
+    const pseudoIn = document.getElementById('pseudo');
     const startBtn = document.getElementById('startBtn');
-    const revisionBtn = document.getElementById('revisionBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const welcome = document.getElementById('welcome');
-    const questionBlock = document.getElementById('questionBlock');
-    const optionsEl = document.getElementById('options');
-    const qTitle = document.getElementById('qTitle');
-    const qScenario = document.getElementById('qScenario');
-    const currentEl = document.getElementById('current');
-    const totalEl = document.getElementById('total');
-    const nextBtn = document.getElementById('nextBtn');
-    const explainEl = document.getElementById('explain');
-    const progBar = document.getElementById('progBar');
-    const badge = document.getElementById('badge');
-    const bestScore = document.getElementById('bestScore');
-    const endBlock = document.getElementById('endBlock');
-    const finalScore = document.getElementById('finalScore');
-    const finalMsg = document.getElementById('finalMsg');
-    const retryBtn = document.getElementById('retryBtn');
+    const startArea = document.getElementById('startArea');
+    const gameArea = document.getElementById('gameArea');
+    const endArea = document.getElementById('endArea');
     const playerName = document.getElementById('playerName');
-    const printCertBtn = document.getElementById('printCertBtn');
-    const certificateBlock = document.getElementById('certificateBlock');
-    const certName = document.getElementById('certName');
-    const certScore = document.getElementById('certScore');
-    const certDate = document.getElementById('certDate');
-    const revisionSection = document.getElementById('revisionSection');
-    const qTotalEl = document.getElementById('total');
+    const counterEl = document.getElementById('counter');
+    const clickBtn = document.getElementById('clickBtn');
+    const timeLeftEl = document.getElementById('timeLeft');
+    const resName = document.getElementById('resName');
+    const resScore = document.getElementById('resScore');
+    const bestEl = document.getElementById('best');
+    const playAgain = document.getElementById('playAgain');
 
-    totalEl.textContent = total;
+    let count = 0; let timeLeft = 5; let timer = null; let playing = false; let pseudo = '';
 
-    // Load best score
-    function loadBest(){
-      const b = Number(localStorage.getItem('cap_best')) || 0;
-      bestScore.textContent = b;
-    }
-    loadBest();
-
-    function startQuiz(){
-      index = 0; score = 0; answered = false;
-      welcome.classList.add('hidden');
-      questionBlock.classList.remove('hidden');
-      endBlock.classList.add('hidden');
-      revisionSection.classList.add('hidden');
-      showQuestion();
+    function loadBest(p){
+      const b = Number(localStorage.getItem('best_'+p)) || 0;
+      bestEl.textContent = b;
+      return b;
     }
 
-    function showQuestion(){
-      const q = QUESTIONS[index];
-      qTitle.textContent = `Scénario ${index+1}`;
-      qScenario.textContent = q.q;
-      optionsEl.innerHTML = '';
-      q.opts.forEach((o,i)=>{
-        const but = document.createElement('div');
-        but.className = 'option';
-        but.tabIndex = 0;
-        but.textContent = o;
-        but.addEventListener('click', ()=>select(i,but));
-        but.addEventListener('keyup', (e)=>{ if(e.key==='Enter') select(i,but) });
-        optionsEl.appendChild(but);
-      });
-      currentEl.textContent = index+1;
-      explainEl.classList.add('hidden');
-      updateProgress();
-      answered = false;
-    }
+    startBtn.addEventListener('click', ()=>{
+      const v = pseudoIn.value.trim();
+      if(!v){ alert('Veuillez entrer un pseudo.'); pseudoIn.focus(); return; }
+      pseudo = v;
+      playerName.textContent = pseudo;
+      startArea.classList.add('hidden');
+      gameArea.classList.remove('hidden');
+      count = 0; counterEl.textContent = count;
+      timeLeft = 5; timeLeftEl.textContent = timeLeft;
+      playing = true;
+      loadBest(pseudo);
 
-    function select(i,el){
-      if(answered) return;
-      answered = true;
-      const q = QUESTIONS[index];
-      const opts = Array.from(optionsEl.children);
-      opts.forEach((node,idx)=>{
-        node.classList.remove('correct','wrong');
-        node.style.pointerEvents = 'none';
-        if(idx===q.a) node.classList.add('correct');
-      })
-      if(i===q.a){ score++; el.classList.add('correct'); }
-      else{ el.classList.add('wrong'); }
-      explainEl.textContent = q.exp;
-      explainEl.classList.remove('hidden');
-      // allow next
-    }
+      // start countdown
+      timer = setInterval(()=>{
+        timeLeft -= 1;
+        timeLeftEl.textContent = timeLeft;
+        if(timeLeft<=0){ finish(); }
+      },1000);
+    });
 
-    function next(){
-      if(!answered) { alert('Veuillez choisir une réponse avant de continuer.'); return; }
-      index++;
-      if(index>=total){ finish(); }
-      else{ showQuestion(); }
-    }
+    clickBtn.addEventListener('click', ()=>{ if(!playing) return; count++; counterEl.textContent = count; });
 
     function finish(){
-      questionBlock.classList.add('hidden');
-      endBlock.classList.remove('hidden');
-      finalScore.textContent = `Score: ${score}/${total}`;
-      const perc = Math.round(score/total*100);
-      finalMsg.textContent = perc>=80? 'Très bien — Vous connaissez bien les bonnes pratiques.' : perc>=50? 'Correct — quelques éléments à revoir.' : 'Besoin d'amélioration — réviser les fiches.';
-      // badge
-      if(perc>=90) badge.textContent = 'Expert';
-      else if(perc>=70) badge.textContent = 'Confirmé';
-      else badge.textContent = 'Débutant';
+      playing = false;
+      clearInterval(timer);
+      gameArea.classList.add('hidden');
+      endArea.classList.remove('hidden');
+      resName.textContent = pseudo;
+      resScore.textContent = count;
       // save best
-      const b = Number(localStorage.getItem('cap_best')) || 0;
-      if(score>b) { localStorage.setItem('cap_best', score); loadBest(); }
-      // certificate data
-      certName.textContent = playerName.value.trim() || '—';
-      certScore.textContent = `${score}/${total}`;
-      certDate.textContent = new Date().toLocaleDateString();
-      certificateBlock.classList.add('hidden');
+      const best = loadBest(pseudo);
+      if(count>best){ localStorage.setItem('best_'+pseudo, count); bestEl.textContent = count; }
     }
 
-    // UI handlers
-    startBtn.addEventListener('click', startQuiz);
-    nextBtn.addEventListener('click', next);
-    retryBtn.addEventListener('click', ()=>{ startQuiz(); playerName.value = ''; });
-    resetBtn.addEventListener('click', ()=>{ localStorage.removeItem('cap_best'); loadBest(); alert('Score enregistré réinitialisé.'); });
-    revisionBtn.addEventListener('click', ()=>{ revisionSection.classList.toggle('hidden'); });
-    printCertBtn.addEventListener('click', ()=>{
-      certificateBlock.classList.toggle('hidden');
-      if(!certificateBlock.classList.contains('hidden')){
-        // prepare printable certificate (user can use browser print)
-        setTimeout(()=>{ window.scrollTo({top: certificateBlock.offsetTop-20, behavior:'smooth'}); },200);
-      }
+    playAgain.addEventListener('click', ()=>{
+      endArea.classList.add('hidden');
+      startArea.classList.remove('hidden');
+      pseudoIn.value = '';
+      pseudoIn.focus();
     });
 
-    function updateProgress(){
-      const pct = Math.round((index)/total*100);
-      progBar.style.width = pct + '%';
-    }
-
-    // Keyboard support: next on N when answered
-    document.addEventListener('keydown', (e)=>{
-      if(e.key.toLowerCase()==='n'){ next(); }
-    });
-
-    // Small accessibility: focus first option when shown
-    const obs = new MutationObserver(()=>{
-      const opts = optionsEl.querySelectorAll('.option'); if(opts[0]) opts[0].focus();
-    });
-    obs.observe(optionsEl, {childList:true});
-
-    // Expose a tiny API for teachers to customise quickly (in console)
-    window.CAPGAME = { QUESTIONS, resetBest: ()=>{ localStorage.removeItem('cap_best'); loadBest(); }, start: startQuiz };
-
-    // On load: update progress bar (0)
-    updateProgress();
+    // accessibility: enter to start
+    pseudoIn.addEventListener('keyup', (e)=>{ if(e.key==='Enter') startBtn.click(); });
   </script>
 </body>
 </html>
+
